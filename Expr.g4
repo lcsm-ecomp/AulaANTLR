@@ -1,9 +1,9 @@
 grammar Expr;
 
-expr: expr op=('*'|'/') expr     # MulDiv
-    | expr op=('+'|'-') expr     # AddSub
-    | INT                        # Int
-    | '(' expr ')'               # Parens
+expr: expr ('*'|'/') expr    
+    | expr ('+'|'-') expr    
+    | INT                        
+    | '(' expr ')'              
     ;
 
 PLUS  : '+' ;
