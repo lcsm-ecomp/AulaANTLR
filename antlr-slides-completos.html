@@ -1,0 +1,212 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Aula ANTLR Completa</title>
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js/dist/reveal.css">
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js/dist/theme/black.css">
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js/plugin/highlight/monokai.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<section data-markdown><textarea data-template>
+# ANTLR  
+## Another Tool for Language Recognition  
+Disciplina de Compiladores
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+## Objetivos da Aula
+- O que é ANTLR
+- Como funciona
+- Exemplo de gramática
+- Geração de código
+- Exploração da árvore sintática
+- Caminhamento manual da árvore
+- Avaliação sem Visitor
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+## O que é ANTLR?
+- Ferramenta para gerar analisadores léxicos e sintáticos
+- Usa gramáticas LL(*)
+- Suporta várias linguagens de saída (Java, Python, C#, JavaScript)
+- Facilita construção de linguagens e DSLs
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+## Etapas de uso
+1. Criar arquivo .g4 com a gramática
+2. Gerar o código fonte (antlr4)
+3. Compilar o código (javac)
+4. Usar o parser (grun ou programa próprio)
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+## Exemplo de Gramática (Expr.g4)
+```antlr
+grammar Expr;
+
+expr: expr op=('*'|'/') expr # MulDiv
+    | expr op=('+'|'-') expr # AddSub
+    | INT                    # Int
+    | '(' expr ')'           # Parens ;
+
+PLUS : '+' ;
+MINUS: '-' ;
+MUL  : '*' ;
+DIV  : '/' ;
+INT  : [0-9]+ ;
+WS   : [ \t\r\n]+ -> skip ;
+```
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+## Explicação da Gramática
+- `expr`: regra principal com 4 formas
+- `op=('*'|'/')`: operadores nomeados para uso no código
+- `Tokens`: PLUS, MINUS, MUL, DIV, INT
+- `WS`: ignora espaços em branco
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+## Geração de Código
+```bash
+antlr4 Expr.g4
+javac -cp .:antlr-4.X-complete.jar Expr*.java
+java -cp .:antlr-4.X-complete.jar org.antlr.v4.gui.TestRig Expr expr -gui
+```
+Windows usa `;` no lugar de `:` no classpath.
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+## Arquivos Gerados pelo ANTLR
+- ExprLexer.java: analisador léxico
+- ExprParser.java: parser + classes internas
+- ExprBaseVisitor.java: classe base para Visitor
+- ExprVisitor.java: interface para Visitor
+- Expr.tokens e Expr.interp: auxiliares
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+## Programa Principal (Main.java)
+```java
+public class Main {
+    public static void main(String[] args) throws Exception {
+        CharStream input = CharStreams.fromString("1 + 2 * 3");
+        ExprLexer lexer = new ExprLexer(input);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        ExprParser parser = new ExprParser(tokens);
+        ParseTree tree = parser.expr();
+        System.out.println(tree.toStringTree(parser));
+    }
+}
+```
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+## Explicação do Programa
+- `CharStreams.fromString`: entrada de texto
+- `ExprLexer`: transforma em tokens
+- `CommonTokenStream`: prepara para o parser
+- `ExprParser`: gera a árvore
+- `tree.toStringTree`: imprime a árvore
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+## API ParseTree para Navegar Árvores
+- `getChild(int i)`: filho i
+- `getChildCount()`: número de filhos
+- `getText()`: texto da subárvore
+- `getPayload()`: conteúdo do nó
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+## instanceof para diferenciar nós
+```java
+if (tree instanceof ExprParser.AddSubContext) {
+    // Nó de soma/subtração
+}
+```
+Usado para caminhar manualmente na árvore.
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+## Iterar sobre filhos da árvore
+```java
+for (int i = 0; i < tree.getChildCount(); i++) {
+    ParseTree child = tree.getChild(i);
+    System.out.println(child.getText());
+}
+```
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+## Avaliação Manual sem Visitor
+```java
+public int eval(ParseTree tree) {
+    if (tree instanceof IntContext ic)
+        return Integer.parseInt(ic.getText());
+    if (tree instanceof ParensContext pc)
+        return eval(pc.expr());
+    if (tree instanceof AddSubContext ac) {
+        int l = eval(ac.expr(0)), r = eval(ac.expr(1));
+        return ac.op.getText().equals("+") ? l + r : l - r;
+    }
+    if (tree instanceof MulDivContext mc) {
+        int l = eval(mc.expr(0)), r = eval(mc.expr(1));
+        return mc.op.getText().equals("*") ? l * r : l / r;
+    }
+    throw new RuntimeException("Expressão inválida");
+}
+```
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+## Quando usar ANTLR?
+- Linguagens de domínio específico (DSLs)
+- Analisadores sintáticos para arquivos de configuração
+- Front-end de compiladores
+- Interpretadores
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+## Vantagens e Limitações
+**Vantagens:**  
+- Gramática clara e legível  
+- Suporte a múltiplas linguagens  
+- Boa integração com IDEs
+
+**Limitações:**  
+- Não suporta gramáticas LR  
+- Pode gerar muito código
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+## Recursos
+- Site: [https://www.antlr.org](https://www.antlr.org)
+- Livro: *The Definitive ANTLR 4 Reference*
+- Exemplos: [https://github.com/antlr/grammars-v4](https://github.com/antlr/grammars-v4)
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+## Exercício Proposto
+- Criar gramática para expressões booleanas
+Ex: `true && (false || true)`
+
+- Dicas:  
+  - Lembre de definir precedência  
+  - Inclua tokens para `true` e `false`
+</textarea></section>
+
+</div>
+</div>
+<script src="https://unpkg.com/reveal.js/dist/reveal.js"></script>
+<script src="https://unpkg.com/reveal.js/plugin/markdown/markdown.js"></script>
+<script src="https://unpkg.com/reveal.js/plugin/highlight/highlight.js"></script>
+<script>Reveal.initialize({hash: true, plugins: [ RevealMarkdown, RevealHighlight ]});</script>
+</body>
+</html>
