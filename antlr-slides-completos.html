@@ -35,6 +35,7 @@ Disciplina de Compiladores
 - Usa gramáticas LL(*)
 - Suporta várias linguagens de saída (Java, Python, C#, JavaScript)
 - Facilita construção de linguagens e DSLs
+- Website: http://www.antlr.org
 </textarea></section>
 
 <section data-markdown><textarea data-template>
@@ -50,10 +51,10 @@ Disciplina de Compiladores
 ```antlr
 grammar Expr;
 
-expr: expr op=('*'|'/') expr # MulDiv
-    | expr op=('+'|'-') expr # AddSub
-    | INT                    # Int
-    | '(' expr ')'           # Parens ;
+expr: expr ('*'|'/') expr
+    | expr ('+'|'-') expr
+    | INT                
+    | '(' expr ')'       ;
 
 PLUS : '+' ;
 MINUS: '-' ;
@@ -67,7 +68,6 @@ WS   : [ \t\r\n]+ -> skip ;
 <section data-markdown><textarea data-template>
 ## Explicação da Gramática
 - `expr`: regra principal com 4 formas
-- `op=('*'|'/')`: operadores nomeados para uso no código
 - `Tokens`: PLUS, MINUS, MUL, DIV, INT
 - `WS`: ignora espaços em branco
 </textarea></section>
@@ -75,9 +75,9 @@ WS   : [ \t\r\n]+ -> skip ;
 <section data-markdown><textarea data-template>
 ## Geração de Código
 ```bash
-antlr4 Expr.g4
-javac -cp .:antlr-4.X-complete.jar Expr*.java
-java -cp .:antlr-4.X-complete.jar org.antlr.v4.gui.TestRig Expr expr -gui
+java antlr.jar Expr.g4
+javac -cp .:antlr.jar Expr*.java
+java -cp .:antlr.jar org.antlr.v4.gui.TestRig Expr expr -gui
 ```
 Windows usa `;` no lugar de `:` no classpath.
 </textarea></section>
@@ -122,6 +122,25 @@ public class Main {
 - `getChildCount()`: número de filhos
 - `getText()`: texto da subárvore
 - `getPayload()`: conteúdo do nó
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+## Exemplo de Gramática Melhorado (Expr.g4)
+```antlr
+grammar Expr;
+
+expr: expr op=('*'|'/') expr # MulDiv
+    | expr op=('+'|'-') expr # AddSub
+    | INT                    # Int
+    | '(' expr ')'           # Parens ;
+
+PLUS : '+' ;
+MINUS: '-' ;
+MUL  : '*' ;
+DIV  : '/' ;
+INT  : [0-9]+ ;
+WS   : [ \t\r\n]+ -> skip ;
+```
 </textarea></section>
 
 <section data-markdown><textarea data-template>
