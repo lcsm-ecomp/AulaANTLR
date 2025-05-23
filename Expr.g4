@@ -1,5 +1,7 @@
 grammar Expr;
 
+programa : expr ;
+
 expr: expr ('*'|'/') expr    
     | expr ('+'|'-') expr    
     | INT                        
