@@ -17,6 +17,16 @@ public interface ExprListener extends ParseTreeListener {
 	 */
 	void exitPrograma(ExprParser.ProgramaContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link ExprParser#com}.
+	 * @param ctx the parse tree
+	 */
+	void enterCom(ExprParser.ComContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ExprParser#com}.
+	 * @param ctx the parse tree
+	 */
+	void exitCom(ExprParser.ComContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link ExprParser#expr}.
 	 * @param ctx the parse tree
 	 */
