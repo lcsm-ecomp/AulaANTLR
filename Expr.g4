@@ -3,7 +3,7 @@ grammar Expr;
 programa : com EOF ;
 
 com : PRINT expr ';' 
-    | X '=' expr ';'
+    | VAR '=' expr ';'
     | '{' com* '}'
     | 'while' '(' expr ')' com
     | 'if' '(' expr ')' com 'else' com ;
@@ -12,15 +12,15 @@ expr: expr POT expr
     | INT expr
     | expr ('*'|'/') expr     
     | expr ('+'|'-') expr    
-    | INT | X                        
+    | INT | STRING | VAR                        
     | '(' expr ')'              
     ;
 
 PRINT : 'print';
 IF    : 'if';
-X     : 'x'|'X' ;
-EQ    : '=' ;
 WHILE : 'while' ;
+VAR   : [a-z]+ ;
+EQ    : '=' ;
 POT   : '^' ;
 ACHA  : '{' ;
 FCHA  : '}' ;
@@ -31,4 +31,5 @@ MINUS : '-' ;
 MUL   : '*' ;
 DIV   : '/' ;
 INT   : [0-9]+ ;
+STRING : ["](~'"'|'\\"')*["]; 
 WS    : [ \t\r\n]+ -> skip ;

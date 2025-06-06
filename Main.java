@@ -1,3 +1,4 @@
+import java.util.*;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 
@@ -19,11 +20,11 @@ public class Main {
         executeComando(tree.com());
         //}
     }
-    static int X = 0;
+    static Map<String, Integer> memoria = new HashMap<String,Integer>();
     static void executeComando(ExprParser.ComContext com) {
         if (com.PRINT()!=null) {
             int result = avalieExpressao(com.expr());
-            System.out.printf("print %d\n",result);
+            System.out.printf("imprime %d\n",result);
             return;
         }
         if (com.ACHA()!=null) {
@@ -34,20 +35,21 @@ public class Main {
         }
         if (com.EQ()!=null) {
             int valor = avalieExpressao(com.expr());
-            X = valor;
-            System.out.printf("X foi modificado para %d\n",valor);
+            String nome = com.VAR().getText();
+            memoria.put(nome, valor);
+            //System.out.printf("%s foi modificado para %d\n",nome, valor);
             return;
         }
         if (com.WHILE()!=null) {
             var teste = com.expr();
             var rept = com.com(0);
-            System.out.println("Iniciando loop");
+            //System.out.println("Iniciando loop");
             int valor = avalieExpressao(teste);
             while (valor!=0) {
                 executeComando(rept);
                 valor = avalieExpressao(teste);
             }
-            System.out.println("Fim do loop");
+            //System.out.println("Fim do loop");
             return;
         }
         if (com.IF()!=null) {
@@ -65,6 +67,11 @@ public class Main {
 
     }
     static int avalieExpressao(ExprParser.ExprContext exp) {
+        if (exp.STRING()!=null) {
+            String str = exp.STRING().getText();
+            System.out.printf("Reconheci a STRING: %s\nmais isso é uma outra historia....\n",str);
+            return 0;
+        }
         if (exp.INT()!=null) {
             int constante = Integer.parseInt(exp.INT().getText());
             if (exp.expr(0)!=null) {
@@ -72,8 +79,9 @@ public class Main {
             }
             return constante;
         }
-        if (exp.X()!=null) {
-            return X;
+        if (exp.VAR()!=null) {
+            String nome = exp.VAR().getText();
+            return memoria.get(nome);
         }
         if (exp.POT()!=null) {
             return (int)Math.pow(avalieExpressao(exp.expr(0)),avalieExpressao(exp.expr(1)));
